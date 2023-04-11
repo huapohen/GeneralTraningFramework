@@ -40,9 +40,9 @@ done
 
 cd ${rtdir}/${dst}
 ln -s ${expdir}/${expdirname} ./experiments/${expdirname}
-ln -s ${expdir}/${cfgdirname} ./experiments/${cfgdirname}
+ln -s ${cfgdir}/${cfgdirname} ./experiments/${cfgdirname}
 git branch
 cd ${rtdir}/${src}
 ln -s ${expdir}/${expdirname} ./experiments/${expdirname}
-ln -s ${expdir}/${cfgdirname} ./experiments/${cfgdirname}
+ln -s ${cfgdir}/${cfgdirname} ./experiments/${cfgdirname}
 git branch
