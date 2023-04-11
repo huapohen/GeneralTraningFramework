@@ -130,5 +130,7 @@ dmypy.json
 
 
 experiments/rain/
+experiments/config/
 */__pycache__/
 .vscode/
+git.sh
