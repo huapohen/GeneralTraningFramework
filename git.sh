@@ -21,6 +21,7 @@ cd ${rtdir}
 mv ${dst}/.git cp.git
 rm -rf ${dst}
 cp -r ${rtdir}/${src} ${rtdir}/${dst}
+rm -rf ${dst}/.git
 mv cp.git ${dst}/.git
 
 # for n in ${dst}
