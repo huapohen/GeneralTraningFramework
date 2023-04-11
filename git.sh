@@ -2,13 +2,16 @@
 rtdir='/home/data/lwb/code'
 expdir='/home/data/lwb/experiments'
 expdirname='rain'
+cfgdir='/home/data/lwb/config/'${expdirname}
+cfgdirname='config'
 src='rain' # github
 dst='Rain' # gitlab
-branch='main'
-commit_detail='Initial Commit'
+branch='dev'
+commit_detail='adjust'
 
 cd ${rtdir}/${src}
 rm -f ./experiments/${expdirname}
+rm -f ./experiments/${cfgdirname}
 git checkout ${branch}
 cd ../${dst}
 git checkout ${branch}
@@ -40,4 +43,5 @@ cd ${rtdir}/${dst}
 git branch
 cd ${rtdir}/${src}
 ln -s ${expdir}/${expdirname} ./experiments/${expdirname}
+ln -s ${expdir}/${cfgdirname} ./experiments/${cfgdirname}
 git branch
