@@ -31,8 +31,7 @@ do
     git status
     git commit -m "${commit_detail}"
     git push
-    git push origin -u ${branch}
-    git push
+    # git push origin -u ${branch} && git pull
 done
 
 # git log

@@ -129,8 +129,8 @@ dmypy.json
 .pyre/
 
 
-experiments/rain/
-experiments/config/
+experiments/
+!experiments/params.json
 */__pycache__/
 .vscode/
 git.sh
