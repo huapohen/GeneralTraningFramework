@@ -18,11 +18,11 @@ git checkout ${branch}
 git checkout -b ${branch}
 git checkout ${branch}
 cd ${rtdir}
-mv ${dst}/.git cp.git
+mv ${dst}/.git ${dst}_git
 rm -rf ${dst}
 cp -r ${rtdir}/${src} ${rtdir}/${dst}
 rm -rf ${dst}/.git
-mv cp.git ${dst}/.git
+mv ${dst}_git ${dst}/.git
 
 # for n in ${dst}
 for n in ${src} ${dst}
@@ -31,8 +31,8 @@ do
     git add .
     git status
     git commit -m "${commit_detail}"
+    git push origin -u ${branch}
     git push
-    # git push origin -u ${branch} && git pull
 done
 
 # git log
