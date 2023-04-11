@@ -7,7 +7,7 @@ cfgdirname='config'
 src='rain' # github
 dst='Rain' # gitlab
 branch='dev'
-commit_detail='adjust'
+commit_detail='update README.md'
 
 cd ${rtdir}/${src}
 rm -f ./experiments/${expdirname}
@@ -40,6 +40,8 @@ done
 # git push origin fblr -f
 
 cd ${rtdir}/${dst}
+ln -s ${expdir}/${expdirname} ./experiments/${expdirname}
+ln -s ${expdir}/${cfgdirname} ./experiments/${cfgdirname}
 git branch
 cd ${rtdir}/${src}
 ln -s ${expdir}/${expdirname} ./experiments/${expdirname}
