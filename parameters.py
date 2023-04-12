@@ -6,6 +6,7 @@ from yacs.config import CfgNode as CN
 
 
 def train_config(cfg):
+    cfg.exp_name = 'rain'
     cfg.exp_id = 3
     cfg.exp_description = f' exp_{cfg.exp_id}: '
     cfg.exp_description += ' mobilenet_v2 + resize_512_and_random_crop_448 '
@@ -29,7 +30,7 @@ def train_config(cfg):
 
 
 def test_config(cfg, args=None):
-
+    cfg.exp_name = 'rain'
     cfg.exp_id = 3
     cfg.gpu_used = '3'
     cfg.save_iteration = 1
@@ -58,15 +59,16 @@ def continue_train(cfg):
 
 
 def common_config(cfg):
+    if 'exp_name' not in vars(cfg):
+        raise 'please assign cfg.exp_name'
     if "linux" in sys.platform:
-        cfg.data_dir = "/home/data/lwb/data/rain"
+        cfg.data_dir = f"/home/data/lwb/data/{cfg.exp_name}"
     else:  # windows
         cfg.data_dir = ""
     if not os.path.exists(cfg.data_dir):
         raise ValueError
     cfg.exp_root_dir = '/home/data/lwb/experiments'
     cfg.exp_current_dir = 'experiments'
-    cfg.exp_name = 'rain'
     cfg.extra_config_json_dir = os.path.join(cfg.exp_current_dir, 'config')
     exp_dir = os.path.join(cfg.exp_root_dir, cfg.exp_name)
     cfg.model_dir = os.path.join(exp_dir, f"exp_{cfg.exp_id}")
