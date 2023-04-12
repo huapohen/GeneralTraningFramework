@@ -194,6 +194,10 @@ class Manager:
                 raise NotImplementedError
             self.logger.info("Saved latest checkpoint to: {}".format(latest_ckpt_name))
 
+        # check whether best model
+        if self.params.current_epoch != self.params.eval_freq:
+            return
+        
         # save val latest metrics, and check if val is best checkpoints
         if "val" in self.dataloaders:
             val_latest_metrics_name = os.path.join(
@@ -238,9 +242,9 @@ class Manager:
             )
             utils.save_dict_to_json(self.test_status, test_latest_metrics_name)
             if self.params.metric_mode == 'ascend':
-                is_best = self.cur_val_score > self.best_val_score
+                is_best = self.cur_test_score > self.best_val_score
             else:
-                is_best = self.cur_val_score < self.best_val_score
+                is_best = self.cur_test_score < self.best_val_score
             if is_best:
                 # save metrics
                 self.best_test_score = self.cur_test_score
