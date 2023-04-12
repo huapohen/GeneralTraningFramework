@@ -6,29 +6,37 @@ from yacs.config import CfgNode as CN
 
 
 def train_config(cfg):
-    cfg.exp_id = 2
+    cfg.exp_name = 'rain'
+    cfg.exp_id = 3
     cfg.exp_description = f' exp_{cfg.exp_id}: '
-    cfg.exp_description += ' first exp '
+    cfg.exp_description += ' mobilenet_v2 + resize_512_and_random_crop_448 '
+    # cfg.net_type = 'convnext'
+    cfg.net_type = 'mobilenet_v2'
     cfg.forward_mode = 'train'
     cfg.gpu_used = '3'
+    cfg.learning_rate = 1e-3
+    cfg.gamma = 0.8
+    cfg.num_epochs = 40
     cfg.train_data_ratio = 1.0
-    cfg.eval_freq = 200
     cfg.train_batch_size = 8
-    # cfg.eval_batch_size = 2
+    cfg.train_num_workers = 8
+    cfg.eval_freq = 10
+    cfg.eval_batch_size = 1
+    cfg.save_iteration = 1
+    cfg.eval_num_workers = 0
     cfg = continue_train(cfg)
     # cfg.gpu_used = '0_1_2_3_4_5_6_7' # use 8 GPUs
     return cfg
 
 
 def test_config(cfg, args=None):
-
-    cfg.exp_id = 1
+    cfg.exp_name = 'rain'
+    cfg.exp_id = 3
     cfg.gpu_used = '3'
     cfg.save_iteration = 1
     cfg.eval_batch_size = 1
     # cfg.eval_batch_size = 16
-    cfg.num_workers = 0
-    # cfg.num_workers = 8
+    cfg.eval_num_workers = 0
     # cfg.is_vis_and_exit = True
     # cfg.is_debug_dataloader = True
 
@@ -51,15 +59,16 @@ def continue_train(cfg):
 
 
 def common_config(cfg):
+    if 'exp_name' not in vars(cfg):
+        raise 'please assign cfg.exp_name'
     if "linux" in sys.platform:
-        cfg.data_dir = "/home/data/lwb/data/rain"
+        cfg.data_dir = f"/home/data/lwb/data/{cfg.exp_name}"
     else:  # windows
         cfg.data_dir = ""
     if not os.path.exists(cfg.data_dir):
         raise ValueError
     cfg.exp_root_dir = '/home/data/lwb/experiments'
     cfg.exp_current_dir = 'experiments'
-    cfg.exp_name = 'rain'
     cfg.extra_config_json_dir = os.path.join(cfg.exp_current_dir, 'config')
     exp_dir = os.path.join(cfg.exp_root_dir, cfg.exp_name)
     cfg.model_dir = os.path.join(exp_dir, f"exp_{cfg.exp_id}")
@@ -75,7 +84,8 @@ def common_config(cfg):
         print("Existing experiment, exit.")
         sys.exit()
     if 'is_debug_dataloader' in dictToObj(cfg) and cfg.is_debug_dataloader:
-        cfg.num_workers = 0
+        cfg.train_num_workers = 0
+        cfg.eval_num_workers = 0
 
     return cfg
 

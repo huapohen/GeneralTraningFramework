@@ -52,15 +52,24 @@ def evaluate(model, manager):
     # loss status and eval status initial
     manager.reset_loss_status()
     manager.reset_metric_status(manager.params.eval_type)
-    model.eval()
     params = manager.params
+    model.eval()
     params.forward_mode = 'eval'
 
-    kpr_list = []
+    eval_info_list = []
     loss_total_list = []
+    total_is_right = 0
+    
+    classes_ind = {
+            0: 'no',
+            1: 'light',
+            2: 'light_moderate',
+            3: 'moderate',
+            4: 'moderate_heavy',
+            5: 'heavy',
+        }
 
     with torch.no_grad():
-        # compute metrics over the dataset
         iter_max = len(manager.dataloaders[params.eval_type])
         with tqdm(total=iter_max) as t:
             for k, data_batch in enumerate(manager.dataloaders[params.eval_type]):
@@ -68,11 +77,11 @@ def evaluate(model, manager):
                 paths = data_batch["path"]
                 data_batch = utils.tensor_gpu(data_batch)
                 output_batch = model(data_batch['image'])
-                losses = compute_losses(output_batch, data_batch, manager.params, k)
+                losses = compute_losses(output_batch, data_batch, params, k)
                 loss_total_list.append(losses['total'].item())
                 eval_results = compute_eval_results(data_batch, output_batch, params)
                 bs = len(paths)
-                if k % params.save_iteration == 0:
+                if True or k % params.save_iteration == 0:
                     for j in range(bs):
                         ind = f'{k*bs+j+1}_b{k}_{j}'
                         pred = eval_results['pred_class'][j]
@@ -80,32 +89,41 @@ def evaluate(model, manager):
                         is_right = 1 if pred == lab else 0
                         loss = losses['total'].item()
                         prt_str = f"index:{ind}, is_right:{is_right}, " + \
-                            f"lab:{lab}, pred:{pred}, path:{paths[j]}, loss:{loss:.4f}"
+                            f"gt:{lab}, pred:{pred}, lab:{classes_ind[lab]}, loss:{loss:.4f}, " + \
+                            f"path:{paths[j].split(params.data_dir)[1]}"
+                        total_is_right += is_right
 
-                kpr_list.append(prt_str)
+                eval_info_list.append(prt_str)
                 # t.set_description(prt_str)
                 t.update()
                 # if k > 10:
                 # break
                 
         loss_total_avg = round(np.mean(np.array(loss_total_list)), 4)
-        prt_loss = f'total_loss: {loss_total_avg}'
+        total_samples = manager.dataloaders[params.eval_type].sample_number['total_samples']
+        # total_samples = iter_max * params.eval_batch_size
+        accuracy = total_is_right / total_samples
+        prt_loss = f'avg_loss: {loss_total_avg} \n'
+        prt_loss += f'samples: {total_samples} \n'
+        prt_loss += f'is_right: {total_is_right} \n'
+        prt_loss += f'Accuracy: {accuracy * 100:.2f}% \n'
         print(prt_loss)
-        kpr_list = [prt_loss + '\n'] + kpr_list
-        kpr_dir = os.path.join(params.model_dir, 'loss')
-        os.makedirs(kpr_dir, exist_ok=True)
+        eval_info_list = [prt_loss + '\n'] + eval_info_list
+        eval_info_dir = os.path.join(params.model_dir, 'eval_info')
+        os.makedirs(eval_info_dir, exist_ok=True)
         if 'current_epoch' not in vars(params):
             params.current_epoch = -1
         kpr_name = f'epoch={params.current_epoch:02d}.txt'
-        kpr_path = os.path.join(kpr_dir, kpr_name)
+        kpr_path = os.path.join(eval_info_dir, kpr_name)
         if os.path.exists(kpr_path):
             os.remove(kpr_path)
         kpr = open(kpr_path, 'a+')
-        kpr.write(('\n').join(kpr_list))
+        kpr.write(('\n').join(eval_info_list))
         kpr.close()
 
         Metric = {
             "total_loss": loss_total_avg,
+            "Accuracy": accuracy,
         }
 
         manager.update_metric_status(
@@ -211,7 +229,7 @@ def run_all_exps(exp_id):
     dataloaders = data_loader.fetch_dataloader(params)
 
     # model
-    params.forward_mode = 'test'
+    params.forward_mode = 'eval'
     model = net.fetch_net(params)
     if params.cuda:
         model = model.cuda()
@@ -220,7 +238,6 @@ def run_all_exps(exp_id):
         # device_ids = range(torch.cuda.device_count())
         model = torch.nn.DataParallel(model, device_ids=device_ids)
         
-
     # Initial status for checkpoint manager
     manager = Manager(
         model=model,
