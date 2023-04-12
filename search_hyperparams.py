@@ -121,17 +121,20 @@ def experiment():
     default_params = utils.Params(json_path)
 
     exp_name = 'rain'
-    exp_start_id = 1
+    exp_start_id = 6
     session_name = str(exp_start_id)  # tmux session name, need pre-create
     param_pool_dict = collections.OrderedDict()
     device_used = collections.OrderedDict()
-    device_used = ['4', '5', '6', '7']
-    param_pool_dict["train_batch_size"] = [16]
+    device_used = ['2', '3']
+    param_pool_dict["train_batch_size"] = [8]
     param_pool_dict["eval_batch_size"] = [16]
     param_pool_dict["train_num_workers"] = [8]
     param_pool_dict["eval_num_workers"] = [8]
-    param_pool_dict['train_data'] = [['v1', 1.0]]
-    param_pool_dict['exp_description'] = ['']
+    param_pool_dict['train_data'] = [[['v1', 1.0]]]
+    param_pool_dict['forward_mode'] = ['train']
+    param_pool_dict['learning_rate'] = [1e-3, 1e-2]
+    exp_description = ' exp_6-7: resize(512)_bilinear, mbnetv2. vs: lr = 1e-3, le-2 '
+    param_pool_dict['exp_description'] = [exp_description]
 
     # '0', '1', '2', '3', '4', '5', '6', '7'
     # device_used = ['6']

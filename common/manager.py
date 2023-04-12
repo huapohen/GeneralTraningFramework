@@ -242,9 +242,9 @@ class Manager:
             )
             utils.save_dict_to_json(self.test_status, test_latest_metrics_name)
             if self.params.metric_mode == 'ascend':
-                is_best = self.cur_test_score > self.best_val_score
+                is_best = self.cur_test_score > self.best_test_score
             else:
-                is_best = self.cur_test_score < self.best_val_score
+                is_best = self.cur_test_score < self.best_test_score
             if is_best:
                 # save metrics
                 self.best_test_score = self.cur_test_score

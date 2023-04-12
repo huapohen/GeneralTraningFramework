@@ -21,7 +21,7 @@ class Net(nn.Module):
     def __init__(self, params):
         super().__init__()
         is_pretrained = True if params.forward_mode == 'train' else False
-        if params.net_type in ['basis', 'mobilenet_v2']:
+        if params.net_type in ['basic', 'mobilenet_v2']:
             model = models.mobilenet_v2(pretrained=is_pretrained)
             model.classifier[1] = nn.Linear(model.last_channel, params.num_classes)
         elif params.net_type == 'convnext':
