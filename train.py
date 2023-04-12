@@ -125,7 +125,7 @@ def train_and_evaluate(model, manager):
         manager.check_best_save_last_checkpoints(latest_freq_val=999, latest_freq=1)
         
     # finished train, evaluate
-    evaluate(manager)
+    evaluate(model, manager)
     with open(os.path.join(manager.params.model_dir, "finish_flag.txt"), "w") as f:
         f.write("exp finish!")
 
