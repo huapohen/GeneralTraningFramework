@@ -103,11 +103,13 @@ def evaluate(model, manager):
                         # total_is_right += is_right
                         eval_info_list.append(prt_str)
                 # t.set_description(prt_str)
-                cur_str = f'current | loss:{avg_loss:.4f}, ' + \
-                    f'acc:{right_count / samples_count * 100:.2f}%'
+                cur_str = f'loss:{avg_loss:.4f}' + \
+                    f'({np.mean(np.array(loss_total_list)):.4f}), ' + \
+                    f'acc:{right_count / bs * 100:.2f}%' + \
+                    f'({total_is_right / samples_count * 100:.2f}%)'
                 t.set_description(cur_str)
                 t.update()
-                # if k > 4:
+                # if k > 6:
                 # break
                 
         loss_total_avg = round(np.mean(np.array(loss_total_list)), 4)
@@ -115,11 +117,11 @@ def evaluate(model, manager):
         # total_samples = iter_max * params.eval_batch_size
         total_samples = max(samples_count, 1)
         accuracy = round(np.float64(total_is_right / total_samples), 4)
-        prt_loss = f'avg_loss: {loss_total_avg} \n'
-        prt_loss += f'samples: {total_samples} \n'
-        prt_loss += f'is_right: {total_is_right} \n'
-        prt_loss += f'Accuracy: {accuracy * 100:.2f}% \n'
-        print(prt_loss)
+        prt_loss = f'total_loss: {loss_total_avg}, '
+        prt_loss += f'samples: {total_samples}, '
+        prt_loss += f'is_right: {total_is_right}, '
+        prt_loss += f'Accuracy: {accuracy * 100:.2f}% '
+        # print(prt_loss)
         eval_info_list = [prt_loss + '\n'] + eval_info_list
         eval_info_dir = os.path.join(params.model_dir, 'eval_info')
         os.makedirs(eval_info_dir, exist_ok=True)

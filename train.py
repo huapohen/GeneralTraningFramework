@@ -123,6 +123,11 @@ def train_and_evaluate(model, manager):
             
         # Save latest model, or best model weights accroding to the params.major_metric
         manager.check_best_save_last_checkpoints(latest_freq_val=999, latest_freq=1)
+        
+    # finished train, evaluate
+    evaluate(manager)
+    with open(os.path.join(manager.params.model_dir, "finish_flag.txt"), "w") as f:
+        f.write("exp finish!")
 
 
 def set_params_lr(params, model):

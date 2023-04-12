@@ -20,10 +20,10 @@ def train_config(cfg):
     cfg.train_data_ratio = 1.0
     cfg.train_batch_size = 8
     cfg.train_num_workers = 8
-    cfg.eval_freq = 10
-    cfg.eval_batch_size = 1
+    cfg.eval_freq = 2
+    cfg.eval_batch_size = 16
+    cfg.eval_num_workers = 8
     cfg.save_iteration = 1
-    cfg.eval_num_workers = 0
     cfg = continue_train(cfg)
     # cfg.gpu_used = '0_1_2_3_4_5_6_7' # use 8 GPUs
     return cfg
