@@ -195,7 +195,7 @@ class Manager:
             self.logger.info("Saved latest checkpoint to: {}".format(latest_ckpt_name))
 
         # check whether best model
-        if self.params.current_epoch != self.params.eval_freq:
+        if self.params.current_epoch % self.params.eval_freq != 0:
             return
         
         # save val latest metrics, and check if val is best checkpoints
