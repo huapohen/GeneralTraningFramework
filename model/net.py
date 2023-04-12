@@ -17,13 +17,18 @@ from ipdb import set_trace as ip
 warnings.filterwarnings("ignore")
 
 
-class MobileNet_v2(nn.Module):
+class Net(nn.Module):
     def __init__(self, params):
         super().__init__()
         is_pretrained = True if params.forward_mode == 'train' else False
-        model = models.mobilenet_v2(pretrained=is_pretrained)
+        if params.net_type in ['basis', 'mobilenet_v2']:
+            model = models.mobilenet_v2(pretrained=is_pretrained)
+            model.classifier[1] = nn.Linear(model.last_channel, params.num_classes)
+        elif params.net_type == 'convnext':
+            # model = models.convnext_small(weights='DEFAULT')
+            model = models.resnext101_32x8d(pretrained=is_pretrained)
+            model.fc = nn.Linear(2048, params.num_classes)
         # Replace the last layer with a custom classifier
-        model.classifier[1] = nn.Linear(model.last_channel, params.num_classes)
         self.model = model
 
     def forward(self, x):
@@ -34,10 +39,8 @@ class MobileNet_v2(nn.Module):
 
 def fetch_net(params):
 
-    if params.net_type == "basic":
-        net = MobileNet_v2(params)
-    else:
-        raise NotImplementedError("Unkown model: {}".format(params.net_type))
+    net = Net(params)
+    
     return net
 
 

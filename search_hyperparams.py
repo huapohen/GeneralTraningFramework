@@ -128,7 +128,8 @@ def experiment():
     device_used = ['4', '5', '6', '7']
     param_pool_dict["train_batch_size"] = [16]
     param_pool_dict["eval_batch_size"] = [16]
-    param_pool_dict["num_workers"] = [8]
+    param_pool_dict["train_num_workers"] = [8]
+    param_pool_dict["eval_num_workers"] = [8]
     param_pool_dict['train_data'] = [['v1', 1.0]]
     param_pool_dict['exp_description'] = ['']
 

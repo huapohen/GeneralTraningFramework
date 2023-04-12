@@ -71,7 +71,7 @@ def train(model, manager):
     # set model to training mode
     torch.cuda.empty_cache()
     model.train()
-    params.forward_mode = 'train'
+    manager.params.forward_mode = 'train'
 
     # Use tqdm for progress bar
     with tqdm(total=len(manager.dataloaders['train'])) as t:
@@ -125,8 +125,13 @@ def train_and_evaluate(model, manager):
         manager.check_best_save_last_checkpoints(latest_freq_val=999, latest_freq=1)
 
 
-def set_params_lr(model):
-    param_names = ['classifier']
+def set_params_lr(params, model):
+    if params.net_type == 'mobilenet_v2':
+        param_names = ['classifier']
+    elif params.net_type == 'convnext':
+        param_names = ['fc']
+    else:
+        raise
     
     def match_name_keywords(n, name_keywords):
         for b in name_keywords:
@@ -138,15 +143,8 @@ def set_params_lr(model):
         if not match_name_keywords(n, param_names) and p.requires_grad:
             p.requires_grad = False
     
+    # logging.info ouput the first lr parameter
     param_dicts = [
-        {
-            "params": [
-                p
-                for n, p in model.named_parameters()
-                if not match_name_keywords(n, param_names) and p.requires_grad
-            ],
-            "lr": params.lr_backbone,
-        },
         {
             "params": [
                 p
@@ -154,6 +152,14 @@ def set_params_lr(model):
                 if match_name_keywords(n, param_names) and p.requires_grad
             ],
             "lr": params.learning_rate,
+        },
+        {
+            "params": [
+                p
+                for n, p in model.named_parameters()
+                if not match_name_keywords(n, param_names) and p.requires_grad
+            ],
+            "lr": params.lr_backbone,
         },
     ]
     
@@ -256,7 +262,6 @@ if __name__ == '__main__':
         logger.info(f"total samples: {sample_info['total_samples']}")
 
     # model
-    params.forward_mode == 'train'
     model = net.fetch_net(params)
 
     # gpu
@@ -267,7 +272,7 @@ if __name__ == '__main__':
         model = torch.nn.DataParallel(model, device_ids=device_ids)
     
     # assign learning_rate
-    param_dicts = set_params_lr(model)
+    param_dicts = set_params_lr(params, model)
     
     # optimizer
     optimizer = optim.Adam(param_dicts, lr=params.learning_rate)

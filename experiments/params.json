@@ -1,18 +1,6 @@
 {
     "project_name": "Rain",
     "data_dir": "/home/data/lwb/data/rain",
-    "train_data": [
-        [
-            "v1",
-            1.0
-        ]
-    ],
-    "test_data": [
-        [
-            "v1",
-            1.0
-        ]
-    ],
     "exp_name": "rain",
     "exp_description": "",
     "exp_id": 0,
@@ -25,18 +13,31 @@
     "net_type": "basic",
     "dataset_type": "basic",
     "eval_type": "test",
-    "major_metric": "total_loss",
-    "metric_mode": "descend",
+    "major_metric": "Accuracy",
+    "metric_mode": "ascend",
     "save_mode": "local",
+    "train_data": [
+        [
+            "v1",
+            1.0
+        ]
+    ],
+    "test_data": [
+        [
+            "v1",
+            1.0
+        ]
+    ],
     "lr_backbone": 0,
     "learning_rate": 1e-3,
     "gamma": 0.8,
     "num_epochs": 40,
     "save_iteration": 100,
     "train_batch_size": 16,
-    "eval_batch_size": 16,
+    "train_num_workers": 8,
     "eval_freq": 2000,
-    "num_workers": 8,
+    "eval_batch_size": 16,
+    "eval_num_workers": 0,
     "seed": 925,
     "num_classes": 6,
     "is_vis_and_exit": false,

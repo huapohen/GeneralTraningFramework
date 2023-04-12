@@ -81,8 +81,10 @@ class RainData(Dataset):
             std = [0.229, 0.224, 0.225]
             crop = RandomCrop if self.mode == 'train' else CenterCrop
             transform = Compose([
-                Resize((256, 256), interpolation=InterpolationMode.BILINEAR),
-                crop(224),
+                # Resize((256, 256), interpolation=InterpolationMode.BILINEAR),
+                # crop(224),
+                Resize(512, interpolation=InterpolationMode.BICUBIC),
+                crop(448),
                 ToTensor(),
                 Normalize(mean, std),
             ])
@@ -103,7 +105,7 @@ def fetch_dataloader(params):
             train_ds,
             batch_size=params.train_batch_size,
             shuffle=True,
-            num_workers=params.num_workers,
+            num_workers=params.train_num_workers,
             pin_memory=params.cuda,
             drop_last=True,
             # prefetch_factor=3,
@@ -117,7 +119,7 @@ def fetch_dataloader(params):
             test_ds,
             batch_size=params.eval_batch_size,
             shuffle=False,
-            num_workers=params.num_workers,
+            num_workers=params.eval_num_workers,
             pin_memory=params.cuda,
             # prefetch_factor=3,
         )
