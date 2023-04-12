@@ -59,6 +59,7 @@ def evaluate(model, manager):
     eval_info_list = []
     loss_total_list = []
     total_is_right = 0
+    samples_count = 0
     
     classes_ind = {
             0: 'no',
@@ -77,32 +78,43 @@ def evaluate(model, manager):
                 paths = data_batch["path"]
                 data_batch = utils.tensor_gpu(data_batch)
                 output_batch = model(data_batch['image'])
-                losses = compute_losses(output_batch, data_batch, params, k)
-                loss_total_list.append(losses['total'].item())
+                losses = compute_losses(output_batch, data_batch, params, k, reduction='none')
                 eval_results = compute_eval_results(data_batch, output_batch, params)
-                bs = len(paths)
-                if True or k % params.save_iteration == 0:
+                # 
+                avg_loss = losses['total'].mean().item()
+                loss_total_list.append(avg_loss)
+                lab_pd = eval_results['pred_class'].detach().cpu()
+                lab_gt = labs.detach().cpu()
+                right_count = (lab_pd == lab_gt).sum()
+                total_is_right += right_count
+                bs = len(data_batch['image'])
+                samples_count += bs
+                if k % params.save_iteration == 0:
                     for j in range(bs):
                         ind = f'{k*bs+j+1}_b{k}_{j}'
                         pred = eval_results['pred_class'][j]
                         lab = labs[j]
                         is_right = 1 if pred == lab else 0
-                        loss = losses['total'].item()
-                        prt_str = f"index:{ind}, is_right:{is_right}, " + \
-                            f"gt:{lab}, pred:{pred}, lab:{classes_ind[lab]}, loss:{loss:.4f}, " + \
+                        loss = losses['total'][j].item()
+                        prt_str = f"index:{ind:<12} is_right: {is_right}  " + \
+                            f"gt:{lab}, pred:{pred}, lab:{classes_ind[lab.item()]:<18} " + \
+                            f"loss:{loss:.4f}, " + \
                             f"path:{paths[j].split(params.data_dir)[1]}"
-                        total_is_right += is_right
-
-                eval_info_list.append(prt_str)
+                        # total_is_right += is_right
+                        eval_info_list.append(prt_str)
                 # t.set_description(prt_str)
+                cur_str = f'current | loss:{avg_loss:.4f}, ' + \
+                    f'acc:{right_count / samples_count * 100:.2f}%'
+                t.set_description(cur_str)
                 t.update()
-                # if k > 10:
+                # if k > 4:
                 # break
                 
         loss_total_avg = round(np.mean(np.array(loss_total_list)), 4)
-        total_samples = manager.dataloaders[params.eval_type].sample_number['total_samples']
+        # total_samples = manager.dataloaders[params.eval_type].sample_number['total_samples']
         # total_samples = iter_max * params.eval_batch_size
-        accuracy = total_is_right / total_samples
+        total_samples = max(samples_count, 1)
+        accuracy = round(np.float64(total_is_right / total_samples), 4)
         prt_loss = f'avg_loss: {loss_total_avg} \n'
         prt_loss += f'samples: {total_samples} \n'
         prt_loss += f'is_right: {total_is_right} \n'
@@ -113,13 +125,13 @@ def evaluate(model, manager):
         os.makedirs(eval_info_dir, exist_ok=True)
         if 'current_epoch' not in vars(params):
             params.current_epoch = -1
-        kpr_name = f'epoch={params.current_epoch:02d}.txt'
-        kpr_path = os.path.join(eval_info_dir, kpr_name)
-        if os.path.exists(kpr_path):
-            os.remove(kpr_path)
-        kpr = open(kpr_path, 'a+')
-        kpr.write(('\n').join(eval_info_list))
-        kpr.close()
+        res_name = f'epoch={params.current_epoch:02d}.txt'
+        res_path = os.path.join(eval_info_dir, res_name)
+        if os.path.exists(res_path):
+            os.remove(res_path)
+        res = open(res_path, 'a+')
+        res.write(('\n').join(eval_info_list))
+        res.close()
 
         Metric = {
             "total_loss": loss_total_avg,
@@ -129,7 +141,7 @@ def evaluate(model, manager):
         manager.update_metric_status(
             metrics=Metric, split=manager.params.eval_type, batch_size=1
         )
-
+        
         # update data to logger
         manager.logger.info(
             "Loss/Test: epoch_{}, {} ".format(

@@ -34,9 +34,10 @@ def test_config(cfg, args=None):
     cfg.exp_id = 3
     cfg.gpu_used = '3'
     cfg.save_iteration = 1
-    cfg.eval_batch_size = 1
-    # cfg.eval_batch_size = 16
-    cfg.eval_num_workers = 0
+    # cfg.eval_batch_size = 1
+    # cfg.eval_num_workers = 0
+    cfg.eval_batch_size = 16
+    cfg.eval_num_workers = 8
     # cfg.is_vis_and_exit = True
     # cfg.is_debug_dataloader = True
 
@@ -59,7 +60,7 @@ def continue_train(cfg):
 
 
 def common_config(cfg):
-    if 'exp_name' not in vars(cfg):
+    if 'exp_name' not in cfg.keys():
         raise 'please assign cfg.exp_name'
     if "linux" in sys.platform:
         cfg.data_dir = f"/home/data/lwb/data/{cfg.exp_name}"
@@ -76,7 +77,7 @@ def common_config(cfg):
     if 'restore_file' in cfg and cfg.restore_file is not None:
         cfg.restore_file = os.path.join(cfg.model_dir, cfg.restore_file)
     if (
-        'is_exp_rm_protect' in vars(cfg)
+        'is_exp_rm_protect' in cfg.keys()
         and cfg.is_exp_rm_protect
         and os.path.exists(cfg.model_dir)
         and not cfg.is_continue_train

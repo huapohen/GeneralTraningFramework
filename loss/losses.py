@@ -15,9 +15,9 @@ from ipdb import set_trace as ip
 
 
 
-def compute_losses(output, input, params, k=0):
+def compute_losses(output, input, params, k=0, reduction='mean'):
     losses = {}
-    losses['total'] = F.cross_entropy(output, input['label'])
+    losses['total'] = F.cross_entropy(output, input['label'], reduction=reduction)
     return losses
 
 
