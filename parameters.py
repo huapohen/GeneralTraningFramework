@@ -7,9 +7,9 @@ from yacs.config import CfgNode as CN
 
 def train_config(cfg):
     cfg.exp_name = 'rain'
-    cfg.exp_id = 3
+    cfg.exp_id = 5
     cfg.exp_description = f' exp_{cfg.exp_id}: '
-    cfg.exp_description += ' mobilenet_v2 + resize_512_and_random_crop_448 '
+    cfg.exp_description += ' mobilenet_v2 + resize_256_and_random_crop_224, bilinear '
     # cfg.net_type = 'convnext'
     cfg.net_type = 'mobilenet_v2'
     cfg.forward_mode = 'train'

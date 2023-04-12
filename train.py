@@ -131,7 +131,7 @@ def train_and_evaluate(model, manager):
 
 
 def set_params_lr(params, model):
-    if params.net_type == 'mobilenet_v2':
+    if params.net_type in ['basic', 'mobilenet_v2']:
         param_names = ['classifier']
     elif params.net_type == 'convnext':
         param_names = ['fc']

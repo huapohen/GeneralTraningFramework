@@ -81,9 +81,9 @@ class RainData(Dataset):
             std = [0.229, 0.224, 0.225]
             crop = RandomCrop if self.mode == 'train' else CenterCrop
             transform = Compose([
-                # Resize((256, 256), interpolation=InterpolationMode.BILINEAR),
-                # crop(224),
-                Resize(512, interpolation=InterpolationMode.BICUBIC),
+                # Resize(512, interpolation=InterpolationMode.BICUBIC),
+                Resize(512, interpolation=InterpolationMode.BILINEAR),
+                # Resize((512, 512), interpolation=InterpolationMode.BILINEAR),
                 crop(448),
                 ToTensor(),
                 Normalize(mean, std),
