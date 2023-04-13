@@ -42,5 +42,13 @@
     "num_classes": 6,
     "is_vis_and_exit": false,
     "is_exp_rm_protect": false,
-    "is_continue_train": false
+    "is_continue_train": false,
+    "resize_size": [
+        720,
+        1280
+    ],
+    "crop_size": [
+        576,
+        1088
+    ]
 }

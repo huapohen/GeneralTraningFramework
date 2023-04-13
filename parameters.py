@@ -7,13 +7,18 @@ from yacs.config import CfgNode as CN
 
 def train_config(cfg):
     cfg.exp_name = 'rain'
-    cfg.exp_id = 5
+    cfg.exp_id = 12
     cfg.exp_description = f' exp_{cfg.exp_id}: '
-    cfg.exp_description += ' mobilenet_v2 + resize_256_and_random_crop_224, bilinear '
+    # cfg.net_type = 'resnet'
+    # cfg.net_type = 'mobilenet'
+    # cfg.net_type = 'densenet'
     # cfg.net_type = 'convnext'
-    cfg.net_type = 'mobilenet_v2'
+    cfg.net_type = 'efficientformer'
+    cfg.exp_description += f' {cfg.net_type}'
+    cfg.resize_size = [240, 240]
+    cfg.crop_size = [224, 224]
     cfg.forward_mode = 'train'
-    cfg.gpu_used = '3'
+    cfg.gpu_used = '7'
     cfg.learning_rate = 1e-3
     cfg.gamma = 0.8
     cfg.num_epochs = 40

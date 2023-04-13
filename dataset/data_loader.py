@@ -19,6 +19,7 @@ class RainData(Dataset):
         self.mode = mode
         self.data_all = []
         self.sample_number = {}
+        self.params = params
         
         for i in range(len(set_data)):
             set_name = set_data[i][0]
@@ -75,16 +76,24 @@ class RainData(Dataset):
         return data_dict
     
     def data_aug(self, img):
-        
+        params = self.params
         def transform_func():
+            # w, h = 1280, 720
+            h, w = 720, 1280
+            # Resize(size=(h, w))
+            # Crop(size=(h, w))
             mean = [0.485, 0.456, 0.406]
             std = [0.229, 0.224, 0.225]
+            ch, cw = 576, 1088
+            rh, rw = params.resize_size
+            ch, cw = params.crop_size
             crop = RandomCrop if self.mode == 'train' else CenterCrop
             transform = Compose([
-                # Resize(512, interpolation=InterpolationMode.BICUBIC),
-                Resize(512, interpolation=InterpolationMode.BILINEAR),
+                Resize((rh, rw), interpolation=InterpolationMode.BICUBIC),
+                # Resize(512, interpolation=InterpolationMode.BILINEAR),
                 # Resize((512, 512), interpolation=InterpolationMode.BILINEAR),
-                crop(448),
+                # crop(448),
+                crop((ch, cw)),
                 ToTensor(),
                 Normalize(mean, std),
             ])

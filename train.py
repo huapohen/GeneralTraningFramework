@@ -64,7 +64,6 @@ parser.add_argument(
 
 
 def train(model, manager):
-
     # loss status initial
     manager.reset_loss_status()
 
@@ -76,7 +75,6 @@ def train(model, manager):
     # Use tqdm for progress bar
     with tqdm(total=len(manager.dataloaders['train'])) as t:
         for i, data_batch in enumerate(manager.dataloaders['train']):
-
             # move to GPU if available
             data_batch = utils.tensor_gpu(data_batch)
 
@@ -111,7 +109,6 @@ def train(model, manager):
 
 
 def train_and_evaluate(model, manager):
-
     for epoch in range(manager.params.num_epochs):
         manager.params.current_epoch = epoch + 1
 
@@ -120,10 +117,10 @@ def train_and_evaluate(model, manager):
 
         if (epoch + 1) % manager.params.eval_freq == 0:
             evaluate(model, manager)
-            
+
         # Save latest model, or best model weights accroding to the params.major_metric
         manager.check_best_save_last_checkpoints(latest_freq_val=999, latest_freq=1)
-        
+
     # finished train, evaluate
     evaluate(model, manager)
     with open(os.path.join(manager.params.model_dir, "finish_flag.txt"), "w") as f:
@@ -131,23 +128,18 @@ def train_and_evaluate(model, manager):
 
 
 def set_params_lr(params, model):
-    if params.net_type in ['basic', 'mobilenet_v2']:
-        param_names = ['classifier']
-    elif params.net_type == 'convnext':
-        param_names = ['fc']
-    else:
-        raise
-    
+    param_names = params.param_names
+
     def match_name_keywords(n, name_keywords):
         for b in name_keywords:
             if b in n:
                 return True
         return False
-    
+
     for n, p in model.named_parameters():
         if not match_name_keywords(n, param_names) and p.requires_grad:
             p.requires_grad = False
-    
+
     # logging.info ouput the first lr parameter
     param_dicts = [
         {
@@ -167,13 +159,11 @@ def set_params_lr(params, model):
             "lr": params.lr_backbone,
         },
     ]
-    
+
     return param_dicts
-        
-        
+
 
 if __name__ == '__main__':
-
     args = parser.parse_args()
 
     if args.params_path is not None and args.restore_file is None:
@@ -252,10 +242,10 @@ if __name__ == '__main__':
 
     # Create the input data pipeline
     logger.info("Creating the dataset...")
-    
+
     # DataLoder
     dataloaders = data_loader.fetch_dataloader(params)
-    
+
     # Dataset information
     for set_mode, set_dl in dataloaders.items():
         sample_info = set_dl.sample_number
@@ -275,15 +265,15 @@ if __name__ == '__main__':
         gpu_num = len(params.gpu_used.split(","))
         device_ids = range(gpu_num)
         model = torch.nn.DataParallel(model, device_ids=device_ids)
-    
+
     # assign learning_rate
     param_dicts = set_params_lr(params, model)
-    
+
     # optimizer
     optimizer = optim.Adam(param_dicts, lr=params.learning_rate)
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=params.gamma)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.995)
-    
+
     # initial status for checkpoint manager
     manager = Manager(
         model=model,
