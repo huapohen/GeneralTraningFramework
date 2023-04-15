@@ -1,7 +1,7 @@
 # General Framework
  
  ## Pretrained
- code: https://pan.baidu.com/s/1cnlodDkddKAjCJY0OZ-KgQ?pwd=gpsd 
+ code: https://pan.baidu.com/s/1cnlodDkddKAjCJY0OZ-KgQ?pwd=gpsd  
  efficientformer_v2 | Accuracy=96.78%  
  mobilenet_v2 | Accuracy=83.45%  
  dataset: https://pan.baidu.com/s/1pW-FZezkO8xoPO9aeQ6XTA?pwd=gpsd 
