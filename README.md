@@ -1,7 +1,9 @@
 # General Framework
  
-
-
+ ## Pretrained
+ 链接：https://pan.baidu.com/s/1zwp3dA-ka8ASvXRtDgx2JQ?pwd=gpsd 
+ 提取码：gpsd 
+ 
  ## Train
 启动训练，有三种方式：  
   1. python train.py  
