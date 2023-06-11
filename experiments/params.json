@@ -1,11 +1,11 @@
 {
     "project_name": "Rain",
-    "data_dir": "/home/data/lwb/data/rain",
+    "data_dir": "/data/lwb/data/rain",
     "exp_name": "rain",
     "exp_description": "",
     "exp_id": 0,
     "gpu_used": "0",
-    "exp_root_dir": "/home/data/lwb/experiments",
+    "exp_root_dir": "/data/lwb/experiments",
     "exp_current_dir": "experiments",
     "model_dir": "experiments/rain/exp_0",
     "tb_path": "experiments/rain/tf_log/exp_0",
@@ -18,13 +18,13 @@
     "save_mode": "local",
     "train_data": [
         [
-            "v1",
+            "v2",
             1.0
         ]
     ],
     "test_data": [
         [
-            "v1",
+            "v2",
             1.0
         ]
     ],
@@ -39,7 +39,7 @@
     "eval_batch_size": 16,
     "eval_num_workers": 0,
     "seed": 925,
-    "num_classes": 6,
+    "num_classes": 7,
     "is_vis_and_exit": false,
     "is_exp_rm_protect": false,
     "is_continue_train": false,

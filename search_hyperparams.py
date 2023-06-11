@@ -18,12 +18,14 @@ from terminal_dispatcher import dispatcher, tmux
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--exp_current_dir', default='experiments',
-    help='Directory containing params.json',
+    "--exp_current_dir",
+    default="experiments",
+    help="Directory containing params.json",
 )
 parser.add_argument(
-    '--exp_root_dir', default='/home/data/lwb/experiments',
-    help='Directory containing params.json',
+    "--exp_root_dir",
+    default="/data/lwb/experiments",
+    help="Directory containing params.json",
 )
 
 
@@ -54,33 +56,33 @@ def launch_training_job(
         device_id = device_used[job_id % num_device]
         hyper_params = task_manager.get_thread(ind=job_id)[0]
         exp_id = job_id + start_id
-        job_name = 'exp_{}'.format(exp_id)
+        job_name = "exp_{}".format(exp_id)
         # ipdb.set_trace()
         for k in hyper_params.keys():
             params.dict[k] = hyper_params[k]
 
-        params.dict['model_dir'] = os.path.join(exp_root_dir, exp_name, job_name)
-        model_dir = params.dict['model_dir']
+        params.dict["model_dir"] = os.path.join(exp_root_dir, exp_name, job_name)
+        model_dir = params.dict["model_dir"]
 
         if not os.path.exists(model_dir):
             os.makedirs(model_dir)
 
         # Write parameters in json file
-        json_path = os.path.join(model_dir, 'params.json')
+        json_path = os.path.join(model_dir, "params.json")
         params.save(json_path)
         # ipdb.set_trace()
 
         # Launch training with this config
         tb_path = os.path.join(exp_root_dir, exp_name, "tf_log", job_name)
         cmd = (
-            'python train.py '
-            f'--gpu_used {device_id} '
-            f'--exp_current_dir {exp_current_dir} '
-            f'--exp_root_dir {exp_root_dir} '
-            f'--model_dir {model_dir} '
-            f'--exp_name {exp_name} '
-            f'--exp_id {exp_id} '
-            f'--tb_path {tb_path}'
+            "python train.py "
+            f"--gpu_used {device_id} "
+            f"--exp_current_dir {exp_current_dir} "
+            f"--exp_root_dir {exp_root_dir} "
+            f"--model_dir {model_dir} "
+            f"--exp_name {exp_name} "
+            f"--exp_id {exp_id} "
+            f"--tb_path {tb_path}"
         )
 
         exp_cmds.append(cmd)
@@ -97,16 +99,16 @@ def launch_training_job(
 
     if True:
         print(
-            '\n terminal: \n'
-            f'\t `tmux ls`: find all running tasks \n'
-            f'\t `tmux attach -t {start_id}` to enter the tmux window \n'
-            f'\t `Ctrl + C`: interupt the task \n'
-            f'\t `Ctrl + D`: end the current subwindow \n'
-            f'\t `Ctrl + B D`: exit the window and keep the taks running\n'
+            "\n terminal: \n"
+            f"\t `tmux ls`: find all running tasks \n"
+            f"\t `tmux attach -t {start_id}` to enter the tmux window \n"
+            f"\t `Ctrl + C`: interupt the task \n"
+            f"\t `Ctrl + D`: end the current subwindow \n"
+            f"\t `Ctrl + B D`: exit the window and keep the taks running\n"
         )
-        check_call(f'tmux ls', shell=True)
+        check_call(f"tmux ls", shell=True)
         time.sleep(1)
-        check_call(f'tmux attach -t {start_id}', shell=True)
+        check_call(f"tmux attach -t {start_id}", shell=True)
 
 
 def experiment():
@@ -114,27 +116,27 @@ def experiment():
     args = parser.parse_args()
     exp_root_dir = args.exp_root_dir
     exp_current_dir = args.exp_current_dir
-    json_path = os.path.join(exp_current_dir, 'params.json')
+    json_path = os.path.join(exp_current_dir, "params.json")
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(
         json_path
     )
     default_params = utils.Params(json_path)
 
-    exp_name = 'rain'
+    exp_name = "rain"
     exp_start_id = 6
     session_name = str(exp_start_id)  # tmux session name, need pre-create
     param_pool_dict = collections.OrderedDict()
     device_used = collections.OrderedDict()
-    device_used = ['2', '3']
+    device_used = ["2", "3"]
     param_pool_dict["train_batch_size"] = [8]
     param_pool_dict["eval_batch_size"] = [16]
     param_pool_dict["train_num_workers"] = [8]
     param_pool_dict["eval_num_workers"] = [8]
-    param_pool_dict['train_data'] = [[['v1', 1.0]]]
-    param_pool_dict['forward_mode'] = ['train']
-    param_pool_dict['learning_rate'] = [1e-3, 1e-2]
-    exp_description = ' exp_6-7: resize(512)_bilinear, mbnetv2. vs: lr = 1e-3, le-2 '
-    param_pool_dict['exp_description'] = [exp_description]
+    param_pool_dict["train_data"] = [[["v1", 1.0]]]
+    param_pool_dict["forward_mode"] = ["train"]
+    param_pool_dict["learning_rate"] = [1e-3, 1e-2]
+    exp_description = " exp_6-7: resize(512)_bilinear, mbnetv2. vs: lr = 1e-3, le-2 "
+    param_pool_dict["exp_description"] = [exp_description]
 
     # '0', '1', '2', '3', '4', '5', '6', '7'
     # device_used = ['6']

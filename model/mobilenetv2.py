@@ -7,7 +7,6 @@ from torch import nn
 from torchvision.transforms import Compose, Resize, ToTensor, Normalize
 
 
-
 def _make_divisible(ch, divisor=8, min_ch=None):
     """
     This function is taken from the original tf repo.
@@ -28,9 +27,17 @@ class ConvBNReLU(nn.Sequential):
     def __init__(self, in_channel, out_channel, kernel_size=3, stride=1, groups=1):
         padding = (kernel_size - 1) // 2
         super(ConvBNReLU, self).__init__(
-            nn.Conv2d(in_channel, out_channel, kernel_size, stride, padding, groups=groups, bias=False),
+            nn.Conv2d(
+                in_channel,
+                out_channel,
+                kernel_size,
+                stride,
+                padding,
+                groups=groups,
+                bias=False,
+            ),
             nn.BatchNorm2d(out_channel),
-            nn.ReLU6(inplace=True)
+            nn.ReLU6(inplace=True),
         )
 
 
@@ -44,13 +51,17 @@ class InvertedResidual(nn.Module):
         if expand_ratio != 1:
             # 1x1 pointwise conv
             layers.append(ConvBNReLU(in_channel, hidden_channel, kernel_size=1))
-        layers.extend([
-            # 3x3 depthwise conv
-            ConvBNReLU(hidden_channel, hidden_channel, stride=stride, groups=hidden_channel),
-            # 1x1 pointwise conv(linear)
-            nn.Conv2d(hidden_channel, out_channel, kernel_size=1, bias=False),
-            nn.BatchNorm2d(out_channel),
-        ])
+        layers.extend(
+            [
+                # 3x3 depthwise conv
+                ConvBNReLU(
+                    hidden_channel, hidden_channel, stride=stride, groups=hidden_channel
+                ),
+                # 1x1 pointwise conv(linear)
+                nn.Conv2d(hidden_channel, out_channel, kernel_size=1, bias=False),
+                nn.BatchNorm2d(out_channel),
+            ]
+        )
 
         self.conv = nn.Sequential(*layers)
 
@@ -87,7 +98,9 @@ class MobileNetV2(nn.Module):
             output_channel = _make_divisible(c * alpha, round_nearest)
             for i in range(n):
                 stride = s if i == 0 else 1
-                features.append(block(input_channel, output_channel, stride, expand_ratio=t))
+                features.append(
+                    block(input_channel, output_channel, stride, expand_ratio=t)
+                )
                 input_channel = output_channel
         # building last several layers
         features.append(ConvBNReLU(input_channel, last_channel, 1))
@@ -97,14 +110,13 @@ class MobileNetV2(nn.Module):
         # building classifier
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Sequential(
-            nn.Dropout(0.2),
-            nn.Linear(last_channel, num_classes)
+            nn.Dropout(0.2), nn.Linear(last_channel, num_classes)
         )
 
         # weight initialization
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out")
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
             elif isinstance(m, nn.BatchNorm2d):
@@ -124,11 +136,15 @@ class MobileNetV2(nn.Module):
 
 def load_image(image_path):
     # Define the image transformations
-    transform = Compose([
-        Resize(256),            # Resize the image to 256x256 pixels
-        ToTensor(),             # Convert the PIL image to a PyTorch tensor
-        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize the image
-    ])
+    transform = Compose(
+        [
+            Resize(256),  # Resize the image to 256x256 pixels
+            ToTensor(),  # Convert the PIL image to a PyTorch tensor
+            Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            ),  # Normalize the image
+        ]
+    )
 
     # Load the image and apply the transformations
     image = Image.open(image_path)
@@ -139,28 +155,27 @@ def load_image(image_path):
 
     return image
 
-    
+
 def unit_test_model():
-    
     # Check if CUDA is available
     cuda_available = torch.cuda.is_available()
 
     # Set the device to 'cuda' if available, otherwise 'cpu'
-    device = torch.device('cuda' if cuda_available else 'cpu')
-    
+    device = torch.device("cuda" if cuda_available else "cpu")
+
     # Download the pre-trained MobileNetV2 model
     mobilenet_v2 = models.mobilenet_v2(pretrained=True)
-    
+
     # Move the model to the selected device (GPU if available)
     mobilenet_v2 = mobilenet_v2.to(device)
 
     # Set the model to evaluation mode
     mobilenet_v2.eval()
-    
+
     # Load and preprocess the image
-    image_path = '/home/data/lwb/code/rain/experiments/rain/pretrain/rocket.jpg'
+    image_path = "/data/lwb/code/rain/experiments/rain/pretrain/rocket.jpg"
     image = load_image(image_path)
-    
+
     # Move the image to the selected device (GPU if available)
     image = image.to(device)
 
@@ -171,9 +186,7 @@ def unit_test_model():
     # Get the predicted class
     _, predicted_class = torch.max(output, 1)
     print("Predicted class:", predicted_class.item())
-    
 
-    
-if __name__ == '__main__':
-    
-    unit_test_model()    
+
+if __name__ == "__main__":
+    unit_test_model()

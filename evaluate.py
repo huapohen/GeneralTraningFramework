@@ -24,17 +24,17 @@ from loss.losses import compute_losses, compute_eval_results
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--params_path',
+    "--params_path",
     default=None,
     help="Directory containing params.json",
 )
 parser.add_argument(
-    '--model_dir',
+    "--model_dir",
     default=None,
     help="Directory containing params.json",
 )
 parser.add_argument(
-    '--restore_file',
+    "--restore_file",
     default=None,
     help="name of the file in --model_dir containing weights to load",
 )
@@ -54,21 +54,22 @@ def evaluate(model, manager):
     manager.reset_metric_status(manager.params.eval_type)
     params = manager.params
     model.eval()
-    params.forward_mode = 'eval'
+    params.forward_mode = "eval"
 
     eval_info_list = []
     loss_total_list = []
     total_is_right = 0
     samples_count = 0
-    
+
     classes_ind = {
-            0: 'no',
-            1: 'light',
-            2: 'light_moderate',
-            3: 'moderate',
-            4: 'moderate_heavy',
-            5: 'heavy',
-        }
+        0: "无  ",
+        1: "微  ",
+        2: "小  ",
+        3: "小中",
+        4: "中  ",
+        5: "中大",
+        6: "大  ",
+    }
 
     with torch.no_grad():
         iter_max = len(manager.dataloaders[params.eval_type])
@@ -77,62 +78,68 @@ def evaluate(model, manager):
                 labs = data_batch["label"]
                 paths = data_batch["path"]
                 data_batch = utils.tensor_gpu(data_batch)
-                output_batch = model(data_batch['image'])
-                losses = compute_losses(output_batch, data_batch, params, k, reduction='none')
+                output_batch = model(data_batch["image"])
+                losses = compute_losses(
+                    output_batch, data_batch, params, k, reduction="none"
+                )
                 eval_results = compute_eval_results(data_batch, output_batch, params)
-                # 
-                avg_loss = losses['total'].mean().item()
+                #
+                avg_loss = losses["total"].mean().item()
                 loss_total_list.append(avg_loss)
-                lab_pd = eval_results['pred_class'].detach().cpu()
+                lab_pd = eval_results["pred_class"].detach().cpu()
                 lab_gt = labs.detach().cpu()
                 right_count = (lab_pd == lab_gt).sum()
                 total_is_right += right_count
-                bs = len(data_batch['image'])
+                bs = len(data_batch["image"])
                 samples_count += bs
                 if k % params.save_iteration == 0:
                     for j in range(bs):
-                        ind = f'{k*bs+j+1}_b{k}_{j}'
-                        pred = eval_results['pred_class'][j]
+                        ind = f"{k*bs+j+1}_b{k}_{j}"
+                        pred = eval_results["pred_class"][j]
                         lab = labs[j]
                         is_right = 1 if pred == lab else 0
-                        loss = losses['total'][j].item()
-                        prt_str = f"index:{ind:<12} is_right: {is_right}  " + \
-                            f"gt:{lab}, pred:{pred}, lab:{classes_ind[lab.item()]:<18} " + \
-                            f"loss:{loss:.4f}, " + \
-                            f"path:{paths[j].split(params.data_dir)[1]}"
+                        loss = losses["total"][j].item()
+                        prt_str = (
+                            f"index:{ind:<12} is_right: {is_right}  "
+                            + f"gt:{lab}, pred:{pred}, lab:{classes_ind[lab.item()]:<18} "
+                            + f"loss:{loss:.4f}, "
+                            + f"path:{paths[j].split(params.data_dir)[1]}"
+                        )
                         # total_is_right += is_right
                         eval_info_list.append(prt_str)
                 # t.set_description(prt_str)
-                cur_str = f'loss:{avg_loss:.4f}' + \
-                    f'({np.mean(np.array(loss_total_list)):.4f}), ' + \
-                    f'acc:{right_count / bs * 100:.2f}%' + \
-                    f'({total_is_right / samples_count * 100:.2f}%)'
+                cur_str = (
+                    f"loss:{avg_loss:.4f}"
+                    + f"({np.mean(np.array(loss_total_list)):.4f}), "
+                    + f"acc:{right_count / bs * 100:.2f}%"
+                    + f"({total_is_right / samples_count * 100:.2f}%)"
+                )
                 t.set_description(cur_str)
                 t.update()
                 # if k > 6:
                 # break
-                
+
         loss_total_avg = round(np.mean(np.array(loss_total_list)), 4)
         # total_samples = manager.dataloaders[params.eval_type].sample_number['total_samples']
         # total_samples = iter_max * params.eval_batch_size
         total_samples = max(samples_count, 1)
         accuracy = round(np.float64(total_is_right / total_samples), 4)
-        prt_loss = f'total_loss: {loss_total_avg}, '
-        prt_loss += f'samples: {total_samples}, '
-        prt_loss += f'is_right: {total_is_right}, '
-        prt_loss += f'Accuracy: {accuracy * 100:.2f}% '
+        prt_loss = f"total_loss: {loss_total_avg}, "
+        prt_loss += f"samples: {total_samples}, "
+        prt_loss += f"is_right: {total_is_right}, "
+        prt_loss += f"Accuracy: {accuracy * 100:.2f}% "
         # print(prt_loss)
-        eval_info_list = [prt_loss + '\n'] + eval_info_list
-        eval_info_dir = os.path.join(params.model_dir, 'eval_info')
+        eval_info_list = [prt_loss + "\n"] + eval_info_list
+        eval_info_dir = os.path.join(params.model_dir, "eval_info")
         os.makedirs(eval_info_dir, exist_ok=True)
-        if 'current_epoch' not in vars(params):
+        if "current_epoch" not in vars(params):
             params.current_epoch = -1
-        res_name = f'epoch={params.current_epoch:02d}.txt'
+        res_name = f"epoch={params.current_epoch:02d}.txt"
         res_path = os.path.join(eval_info_dir, res_name)
         if os.path.exists(res_path):
             os.remove(res_path)
-        res = open(res_path, 'a+')
-        res.write(('\n').join(eval_info_list))
+        res = open(res_path, "a+")
+        res.write(("\n").join(eval_info_list))
         res.close()
 
         Metric = {
@@ -143,7 +150,7 @@ def evaluate(model, manager):
         manager.update_metric_status(
             metrics=Metric, split=manager.params.eval_type, batch_size=1
         )
-        
+
         # update data to logger
         manager.logger.info(
             "Loss/Test: epoch_{}, {} ".format(
@@ -163,8 +170,7 @@ def evaluate(model, manager):
 
 
 def eval_save_result(save_file, save_name, manager, k, j, i, m):
-
-    type_name = 'gif' if type(save_file) == list else 'jpg'
+    type_name = "gif" if type(save_file) == list else "jpg"
     save_dir_gif = os.path.join(manager.params.model_dir, type_name)
     if not os.path.exists(save_dir_gif):
         os.makedirs(save_dir_gif)
@@ -176,11 +182,11 @@ def eval_save_result(save_file, save_name, manager, k, j, i, m):
             shutil.rmtree(save_dir_gif_epoch)
         os.makedirs(save_dir_gif_epoch, exist_ok=True)
 
-    save_path = os.path.join(save_dir_gif_epoch, save_name + '.' + type_name)
+    save_path = os.path.join(save_dir_gif_epoch, save_name + "." + type_name)
     if type(save_file) == list:  # save gif
         utils.create_gif(save_file, save_path)
     elif type(save_file) == str:  # save string information
-        f = open(save_path, 'w')
+        f = open(save_path, "w")
         f.write(save_file)
         f.close()
     else:  # save single image
@@ -198,16 +204,16 @@ def run_all_exps(exp_id):
 
     if args.params_path is not None and args.restore_file is None:
         # run test by DIY in designated diy_params.json
-        '''python evaluate.py --params_path diy_param_json_path'''
+        """python evaluate.py --params_path diy_param_json_path"""
         params = utils.Params(args.params_path)
     else:
         # run by python evaluate.py
         if exp_id is not None:
             args.exp_id = exp_id
-        cfg = get_config(args, mode='test')
+        cfg = get_config(args, mode="test")
         dic_params = json.loads(json.dumps(cfg))
         obj_params = dictToObj(dic_params)
-        params_default_path = os.path.join(obj_params.exp_current_dir, 'params.json')
+        params_default_path = os.path.join(obj_params.exp_current_dir, "params.json")
         model_json_path = os.path.join(obj_params.model_dir, "params.json")
         assert os.path.isfile(
             model_json_path
@@ -234,7 +240,7 @@ def run_all_exps(exp_id):
         torch.cuda.manual_seed(params.seed)
 
     # Get the logger
-    logger = utils.set_logger(os.path.join(params.model_dir, 'evaluate.log'))
+    logger = utils.set_logger(os.path.join(params.model_dir, "evaluate.log"))
 
     # Create the input data pipeline
     logging.info("Creating the dataset...")
@@ -243,7 +249,7 @@ def run_all_exps(exp_id):
     dataloaders = data_loader.fetch_dataloader(params)
 
     # model
-    params.forward_mode = 'eval'
+    params.forward_mode = "eval"
     model = net.fetch_net(params)
     if params.cuda:
         model = model.cuda()
@@ -251,7 +257,7 @@ def run_all_exps(exp_id):
         device_ids = range(gpu_num)
         # device_ids = range(torch.cuda.device_count())
         model = torch.nn.DataParallel(model, device_ids=device_ids)
-        
+
     # Initial status for checkpoint manager
     manager = Manager(
         model=model,
@@ -274,7 +280,6 @@ def run_all_exps(exp_id):
 
 
 if __name__ == "__main__":
-
     # for i in range(5, 10):
     #     run_all_exps(i)
     run_all_exps(exp_id=None)
